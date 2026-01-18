@@ -111,3 +111,24 @@ async def get_metrics_json():
   except Exception as e:
     logger.error(f"Error generating JSON metrics: {e}")
     return {"error": str(e)}
+
+@app.get("/api/stream")
+async def stream_metrics():
+  async def event_generator():
+    try:
+      while True:
+        metrics = await get_metrics_json()
+        yield f"data: {json.dumps(metrics)}\n\n"
+        await asyncio.sleep(5)  
+    except asyncio.CancelledError:
+      logger.info("Metrics streaming cancelled")
+      raise
+
+  return StreamingResponse(
+    event_generator(),
+    media_type="text/event-stream",
+    headers={"Cache-Control": "no-cache",
+              "Connection": "keep-alive",
+              "X-Accel-Buffering": "no"
+              }
+  )
