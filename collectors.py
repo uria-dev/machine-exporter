@@ -1,14 +1,14 @@
 import psutil
 import logging
 from metrics import (
-    machine_cpu_count,
-    machine_cpu_utilisation,
-    machine_memory_total,
-    machine_memory_utilisation,
-    machine_disk_read_bytes,
-    machine_disk_write_bytes,
-    machine_network_bytes_sent,
-    machine_network_bytes_recv,
+    cpu_count,
+    cpu_utilisation,
+    memory_total,
+    memory_utilisation,
+    disk_read_bytes,
+    disk_write_bytes,
+    network_bytes_sent,
+    network_bytes_recv,
     disk_total_bytes,
     disk_utilisation_percentage,
 )
@@ -19,27 +19,23 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class MetricsCollector:
-  """Collects system metrics and updates Prometheus Gauges."""
 
   def __init__(self):
-    """Initializes the MetricsCollector."""
     logger.info("Initialised MetricsCollector")
 
   def collect_cpu_metrics(self):
-    """Collects CPU metrics."""
     try:
-      cpu_count = psutil.cpu_count()
-      if cpu_count is not None:
-        machine_cpu_count.set(cpu_count)
+      cpu_num = psutil.cpu_count()
+      if cpu_num is not None:
+        cpu_count.set(cpu_num)
 
         cpu_percent = psutil.cpu_percent(interval=None)
-        machine_cpu_utilisation.set(cpu_percent)
+        cpu_utilisation.set(cpu_percent)
         logger.debug(f"Collected CPU metrics: count={cpu_count}, utilisation={cpu_percent}%")
     except Exception as e:
       logger.error(f"Error collecting CPU metrics: {e}")
 
   def collect_memory_metrics(self):
-    """Collects memory metrics."""
     try:
       virtual_memory = psutil.virtual_memory()
       total_memory = virtual_memory.total
@@ -49,14 +45,14 @@ class MetricsCollector:
         logger.error(f"Error collecting memory metrics: {e}")
   
   def collect_disk_io_metrics(self):
-    """Collects disk I/O metrics."""
     try:
 
       disk_io = psutil.disk_io_counters()
       if disk_io is None:
         logger.warning("Disk I/O counters not available.")
         return;
-      
-
+      disk_read_bytes.set(disk_io.read_bytes)
+      disk_write_bytes.set(disk_io.write_bytes)
+      logger.debug(f"Collected Disk I/O metrics: read_bytes={disk_io.read_bytes}, write_bytes={disk_io.write_bytes}")
     except Exception as e:
       logger.error(f"Error collecting Disk I/O metrics: {e}")
