@@ -27,6 +27,26 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+  task = asyncio.create_task(collect_metrics_periodically())
+  logger.info("Application started")
+  yield
+
+  task.cancel()
+  try:
+    await task
+  except asyncio.CancelledError:
+    pass
+  logger.info("Application shutdown completed")
+
+app = FastAPI(
+  title="Machine Exporter",
+  version="1.0.0",
+  description="A Prometheus exporter for machine metrics using FastAPI and psutil.",
+  lifespan=lifespan
+  )
+
 async def collect_metrics_periodically():
   collector = MetricsCollector()
   logger.info("Starting periodic metrics collection")
