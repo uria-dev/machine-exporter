@@ -70,3 +70,26 @@ class MetricsCollector:
           logger.warning(f"Permission denied accessing disk usage for partition {partition.mountpoint}")
     except Exception as e:
       logger.error(f"Error collecting Disk utilisation metrics: {e}")
+  def collect_network_metrics(self):
+    try:
+      net_io = psutil.net_io_counters()
+      if net_io is None:
+        logger.warning("Network I/O counters not available.")
+        return;
+      network_bytes_sent.set(net_io.bytes_sent)
+      network_bytes_recv.set(net_io.bytes_recv)
+      logger.debug(f"Collected Network metrics: bytes_sent={net_io.bytes_sent}, bytes_recv={net_io.bytes_recv}")
+    except Exception as e:
+      logger.error(f"Error collecting Network metrics: {e}")
+  
+  def collect_all_metrics(self):
+    try:
+      logger.debug("Collecting metrics...")
+      self.collect_cpu_metrics()
+      self.collect_memory_metrics()
+      self.collect_disk_io_metrics()
+      self.collect_disk_utilisation_metrics()
+      self.collect_network_metrics()
+      logger.debug("All metrics collected.")
+    except Exception as e:
+      logger.error(f"Error collecting all metrics: {e}")
