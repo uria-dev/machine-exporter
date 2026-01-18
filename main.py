@@ -26,3 +26,18 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+async def collect_metrics_periodically():
+  collector = MetricsCollector()
+  logger.info("Starting periodic metrics collection")
+
+  try:
+    while True:
+      try:
+        collector.collect_all_metrics()
+        await asyncio.sleep(5)  
+      except Exception as e:
+        logger.error(f"Error in collecting metrics: {e}")
+  except asyncio.CancelledError:
+    logger.info("Metrics collection task cancelled")
+    raise
