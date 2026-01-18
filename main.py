@@ -61,3 +61,6 @@ async def collect_metrics_periodically():
   except asyncio.CancelledError:
     logger.info("Metrics collection task cancelled")
     raise
+
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
