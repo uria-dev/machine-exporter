@@ -38,6 +38,8 @@ class MetricsCollector:
   def collect_memory_metrics(self):
     try:
       virtual_memory = psutil.virtual_memory()
+      memory_total.set(virtual_memory.total)
+      memory_utilisation.set(virtual_memory.percent)
       total_memory = virtual_memory.total
       used_memory_percent = virtual_memory.percent
       logger.debug(f"Collected Memory metrics: total={total_memory} bytes, utilisation={used_memory_percent}%")
@@ -46,7 +48,6 @@ class MetricsCollector:
   
   def collect_disk_io_metrics(self):
     try:
-
       disk_io = psutil.disk_io_counters()
       if disk_io is None:
         logger.warning("Disk I/O counters not available.")
@@ -56,3 +57,16 @@ class MetricsCollector:
       logger.debug(f"Collected Disk I/O metrics: read_bytes={disk_io.read_bytes}, write_bytes={disk_io.write_bytes}")
     except Exception as e:
       logger.error(f"Error collecting Disk I/O metrics: {e}")
+  def collect_disk_utilisation_metrics(self):
+    try:
+      partitions = psutil.disk_partitions()
+      for partition in partitions:
+        try:
+          usage = psutil.disk_usage(partition.mountpoint)
+          disk_total_bytes.labels(mountpoint=partition.mountpoint).set(usage.total)
+          disk_utilisation_percentage.labels(mountpoint=partition.mountpoint).set(usage.percent)
+          logger.debug(f"Collected Disk utilisation metrics for {partition.mountpoint}: total={usage.total} bytes, utilisation={usage.percent}%")
+        except PermissionError:
+          logger.warning(f"Permission denied accessing disk usage for partition {partition.mountpoint}")
+    except Exception as e:
+      logger.error(f"Error collecting Disk utilisation metrics: {e}")
