@@ -1,0 +1,15 @@
+<div class="card">
+  <h2>{{ title }}</h2>
+  <div
+    class="chart-container"
+    {%
+    if
+    height
+    %}style="height: {{ height }}px;"
+    {%
+    endif
+    %}
+  >
+    <canvas id="{{ canvas_id }}"></canvas>
+  </div>
+</div>

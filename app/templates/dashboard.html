@@ -1,14 +1,60 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Machine Metrics{% endblock %}</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-    <link rel="stylesheet" href="/static/styles.css" />
-    {% block extra_head %}{% endblock %}
-  </head>
-  <body>
-    {% block content %}{% endblock %} {% block scripts %}{% endblock %}
-  </body>
-</html>
+{% extends "base.html" %} {% block title %}{{ title }}{% endblock %} {% block
+content %}
+<div class="container">
+  <h1>{{ title }}</h1>
+
+  {# Status bar component #} {% include 'components/status_bar.html' %} {# CPU
+  and Memory cards #}
+  <div class="grid">
+    {% for card in metric_cards[:2] %}
+    <div class="card">
+      <h2>{{ card.title }}</h2>
+      <div class="chart-container">
+        <canvas id="{{ card.canvas_id }}"></canvas>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {# Network I/O card #}
+  <div class="grid">
+    <div class="card full-width">
+      <h2>Network I/O (Bytes/sec)</h2>
+      <div class="chart-container" style="height: 300px">
+        <canvas id="networkChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  {# Disk I/O card #}
+  <div class="grid">
+    <div class="card full-width">
+      <h2>Disk I/O (Bytes/sec)</h2>
+      <div class="chart-container" style="height: 300px">
+        <canvas id="diskIoChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  {# Disk Usage card #}
+  <div class="grid">
+    <div class="card full-width">
+      <h2>Disk Usage by Mountpoint</h2>
+      <div class="chart-container" style="height: 300px">
+        <canvas id="diskUsageChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+
+  const updateInterval = {{ update_interval * 1000 }};
+
+
+  {% include 'components/chart_init.js' %}
+
+
+  {% include 'components/sse_connection.js' %}
+</script>
+{% endblock %}
