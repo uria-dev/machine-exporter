@@ -1,6 +1,6 @@
 import psutil
 import logging
-from metrics import (
+from .metrics import (
     cpu_count,
     cpu_utilisation,
     memory_total,

@@ -11,8 +11,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from prometheus_client import make_asgi_app
 
-from collectors import MetricsCollector
-from metrics import (
+from .collectors import MetricsCollector
+from .metrics import (
     cpu_count,
     cpu_utilisation,
     memory_total,
@@ -121,7 +121,6 @@ async def dashboard(request: Request):
 async def get_metrics_json():
   try:
     disks = []
-    from metrics import disk_total_bytes, disk_utilisation_percentage
     import psutil
     partitions = psutil.disk_partitions()
     for partition in partitions:
@@ -134,8 +133,8 @@ async def get_metrics_json():
         })
       except: continue
 
-      return {
-        "cpu": {
+    return {
+      "cpu": {
           "count": get_gauge_value(cpu_count),
           "utilisation": get_gauge_value(cpu_utilisation)
         },
@@ -181,7 +180,7 @@ async def stream_metrics():
 if __name__ == "__main__":
   import uvicorn
   uvicorn.run(
-    "app:main:app",
+    "app.main:app",
     host="0.0.0.0",
     port=8000,
     reload=True,
