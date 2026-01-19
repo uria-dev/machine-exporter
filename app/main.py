@@ -4,6 +4,8 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, StreamingResponse
 from prometheus_client import make_asgi_app
 
@@ -131,4 +133,13 @@ async def stream_metrics():
               "Connection": "keep-alive",
               "X-Accel-Buffering": "no"
               }
+  )
+if __name__ == "__main__":
+  import uvicorn
+  uvicorn.run(
+    "main:app",
+    host="0.0.0.0",
+    port=8000,
+    reload=True,
+    log_level="info"
   )
