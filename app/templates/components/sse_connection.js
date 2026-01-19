@@ -5,7 +5,7 @@ let previousTimestamp = null;
 function updateCharts(data) {
   const currentTimestamp = data.timestamp || Date.now() / 1000;
 
-  const cpuUtil = data.cpu.utilization || 0;
+  const cpuUtil = data.cpu.utilisation || 0;
   cpuChart.data.datasets[0].data = [cpuUtil, 100 - cpuUtil];
   cpuChart.data.datasets[0].backgroundColor = [
     cpuUtil > 90 ? "#ef4444" : cpuUtil > 70 ? "#f59e0b" : "#10b981",
@@ -13,7 +13,7 @@ function updateCharts(data) {
   ];
   cpuChart.update();
 
-  const memUtil = data.memory.utilization_percent || 0;
+  const memUtil = data.memory.utilisation_percent || 0;
   memoryChart.data.datasets[0].data = [memUtil, 100 - memUtil];
   memoryChart.data.datasets[0].backgroundColor = [
     memUtil > 90 ? "#ef4444" : memUtil > 70 ? "#f59e0b" : "#10b981",
@@ -67,7 +67,7 @@ function updateCharts(data) {
   if (data.disks && data.disks.length > 0) {
     diskUsageChart.data.labels = data.disks.map((d) => d.mountpoint);
     diskUsageChart.data.datasets[0].data = data.disks.map(
-      (d) => d.utilization_percent,
+      (d) => d.utilisation_percent,
     );
     diskUsageChart.update();
   }
