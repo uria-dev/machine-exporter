@@ -1,12 +1,14 @@
 import asyncio
 import json
 import logging
+import socket
+import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, StreamingResponse
 from prometheus_client import make_asgi_app
 
 from collectors import MetricsCollector
@@ -47,7 +49,11 @@ app = FastAPI(
   version="1.0.0",
   description="A Prometheus exporter for machine metrics using FastAPI and psutil.",
   lifespan=lifespan
-  )
+)
+templates = Jinja2Templates(directory="app/templates")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
 
 async def collect_metrics_periodically():
   collector = MetricsCollector()
@@ -64,14 +70,52 @@ async def collect_metrics_periodically():
     logger.info("Metrics collection task cancelled")
     raise
 
-metrics_app = make_asgi_app()
-app.mount("/metrics", metrics_app)
+
 
 def get_gauge_value(gauge):
   try:
     return gauge._value.get()
   except:
     return 0
+
+@app.get("/")
+async def dashboard(request: Request):
+    """Render dashboard with Python-generated data."""
+
+    metric_cards = [
+        {
+            "title": "CPU Usage",
+            "canvas_id": "cpuChart",
+            "type": "gauge"
+        },
+        {
+            "title": "Memory Usage",
+            "canvas_id": "memoryChart",
+            "type": "gauge"
+        },
+        {
+            "title": "Network I/O",
+            "canvas_id": "networkChart",
+            "type": "line",
+            "height": 300
+        },
+        {
+            "title": "Disk I/O",
+            "canvas_id": "diskIoChart",
+            "type": "line",
+            "height": 300
+        }
+    ]
+    config = {
+        "request": request,
+        "title": os.getenv("DASHBOARD_TITLE", "Machine Metrics Dashboard"),
+        "hostname": socket.gethostname(),
+        "update_interval": int(os.getenv("METRICS_INTERVAL", "5")),
+        "metric_cards": metric_cards,  # Python passes this list to template
+    }
+
+    return templates.TemplateResponse("dashboard.html", config)
+    
   
 @app.get("/api/metrics")
 async def get_metrics_json():
@@ -137,7 +181,7 @@ async def stream_metrics():
 if __name__ == "__main__":
   import uvicorn
   uvicorn.run(
-    "main:app",
+    "app:main:app",
     host="0.0.0.0",
     port=8000,
     reload=True,

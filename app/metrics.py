@@ -7,6 +7,6 @@ memory_utilisation = Gauge('memory_utilisation_percentage', 'Used memory in perc
 disk_read_bytes = Gauge('disk_read_bytes', 'Disk read bytes')
 disk_write_bytes = Gauge('disk_write_bytes', 'Disk write bytes')
 network_bytes_sent = Gauge('network_bytes_sent', 'Network bytes sent')
-network_bytes_recv = Gauge('machine_network_bytes_recv', 'Network bytes received')
+network_bytes_recv = Gauge('network_bytes_recv', 'Network bytes received')
 disk_total_bytes = Gauge('disk_total_bytes', 'Total disk space in bytes', ['mountpoint'])
 disk_utilisation_percentage = Gauge('disk_utilisation_percentage', 'Disk utilisation percentage', ['mountpoint'])
